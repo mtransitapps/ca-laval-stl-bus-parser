@@ -27,7 +27,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		if (args == null || args.length == 0) {
 			args = new String[3];
 			args[0] = "input/gtfs.zip";
-			args[1] = "../ca-laval-stl-bus/res/raw/";
+			args[1] = "../ca-laval-stl-bus-android/res/raw/";
 			args[2] = ""; // files-prefix
 		}
 		new LavalSTLBusAgencyTools().start(args);
