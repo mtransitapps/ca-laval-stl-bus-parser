@@ -1,4 +1,4 @@
-package org.mtransit.parser;
+package org.mtransit.parser.ca_laval_stl_bus;
 
 import java.util.regex.Pattern;
 
