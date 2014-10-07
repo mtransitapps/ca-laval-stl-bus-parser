@@ -3,6 +3,8 @@ package org.mtransit.parser.ca_laval_stl_bus;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.mtransit.parser.DefaultAgencyTools;
+import org.mtransit.parser.Utils;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
 import org.mtransit.parser.gtfs.data.GRoute;
