@@ -97,7 +97,8 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String getRouteLongName(GRoute gRoute) {
-		return null; // not route long name
+		String routeLongName = gRoute.route_long_name.substring("Direction ".length());
+		return routeLongName;
 	}
 
 	@Override
