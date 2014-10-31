@@ -28,7 +28,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		if (args == null || args.length == 0) {
 			args = new String[3];
 			args[0] = "input/gtfs.zip";
-			args[1] = "../ca-laval-stl-bus-android/res/raw/";
+			args[1] = "../../mtransitapps/ca-laval-stl-bus-android/res/raw/";
 			args[2] = ""; // files-prefix
 		}
 		new LavalSTLBusAgencyTools().start(args);
@@ -95,10 +95,43 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return StringUtils.leftPad(gRoute.route_short_name, 3); // route short name length = 3
 	}
 
+	private static final Pattern DIRECTION = Pattern.compile("(direction)", Pattern.CASE_INSENSITIVE);
+	private static final String DIRECTION_REPLACEMENT = " ";
+
+	private static final Pattern TERMINUS = Pattern.compile("(terminus)", Pattern.CASE_INSENSITIVE);
+	private static final String TERMINUS_REPLACEMENT = " ";
+
+	private static final Pattern METRO = Pattern.compile("(m[e|é]tro)", Pattern.CASE_INSENSITIVE);
+	private static final String METRO_REPLACEMENT = " ";
+
+	private static final Pattern GARE = Pattern.compile("(gare)", Pattern.CASE_INSENSITIVE);
+	private static final String GARE_REPLACEMENT = " ";
+
 	@Override
 	public String getRouteLongName(GRoute gRoute) {
-		String routeLongName = gRoute.route_long_name.substring("Direction ".length());
-		return routeLongName;
+		return cleanRouteLongName(gRoute.route_long_name);
+	}
+
+	private String cleanRouteLongName(String result) {
+		result = DIRECTION.matcher(result).replaceAll(DIRECTION_REPLACEMENT);
+		result = METRO.matcher(result).replaceAll(METRO_REPLACEMENT);
+		result = GARE.matcher(result).replaceAll(GARE_REPLACEMENT);
+		result = TERMINUS.matcher(result).replaceAll(TERMINUS_REPLACEMENT);
+		result = MSpec.SAINT.matcher(result).replaceAll(MSpec.SAINT_REPLACEMENT);
+		return MSpec.cleanLabel(result);
+	}
+
+	public static final String COLOR_BLUE = "0053A6";
+	public static final String COLOR_WHITE = "FFFFFF";
+
+	@Override
+	public String getRouteColor(GRoute gRoute) {
+		return COLOR_BLUE; // source file colors are nuts!
+	}
+
+	@Override
+	public String getRouteTextColor(GRoute gRoute) {
+		return COLOR_WHITE; // source file colors are nuts!
 	}
 
 	@Override
