@@ -90,11 +90,6 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return Integer.valueOf(gRoute.route_short_name); // using route short name instead of route ID
 	}
 
-	@Override
-	public String getRouteShortName(GRoute gRoute) {
-		return StringUtils.leftPad(gRoute.route_short_name, 3); // route short name length = 3
-	}
-
 	private static final Pattern DIRECTION = Pattern.compile("(direction)", Pattern.CASE_INSENSITIVE);
 	private static final String DIRECTION_REPLACEMENT = " ";
 
