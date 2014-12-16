@@ -11,6 +11,7 @@ import org.mtransit.parser.gtfs.data.GRoute;
 import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MDirectionType;
+import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MSpec;
 import org.mtransit.parser.mt.data.MTrip;
 
@@ -86,7 +87,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
-	public int getRouteId(GRoute gRoute) {
+	public long getRouteId(GRoute gRoute) {
 		return Integer.valueOf(gRoute.route_short_name); // using route short name instead of route ID
 	}
 
@@ -135,7 +136,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
-	public void setTripHeadsign(MTrip mTrip, GTrip gTrip) {
+	public void setTripHeadsign(MRoute route, MTrip mTrip, GTrip gTrip) {
 		final String directionIdString = gTrip.getRouteId().substring(gTrip.getRouteId().length() - 1);
 		mTrip.setHeadsignDirection(MDirectionType.parse(directionIdString));
 	}
