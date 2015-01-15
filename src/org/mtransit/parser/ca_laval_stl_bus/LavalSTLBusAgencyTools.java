@@ -1,13 +1,18 @@
 package org.mtransit.parser.ca_laval_stl_bus;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.Utils;
+import org.mtransit.parser.gtfs.GReader;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
 import org.mtransit.parser.gtfs.data.GRoute;
+import org.mtransit.parser.gtfs.data.GSpec;
 import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MDirectionType;
@@ -21,9 +26,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	public static final String ROUTE_TYPE_FILTER = "3"; // bus only
 
-	public static final String ROUTE_ID_FILTER = "AOUT14"; // TODO use calendar
-	public static final String SERVICE_ID_FILTER = ROUTE_ID_FILTER; // TODO use calendar
-	public static final String STOP_ID_FILTER = SERVICE_ID_FILTER; // TODO use calendar
+	private HashSet<String> startWithFilters;
 
 	public static void main(String[] args) {
 		if (args == null || args.length == 0) {
@@ -39,8 +42,43 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	public void start(String[] args) {
 		System.out.printf("Generating STL bus data...\n");
 		long start = System.currentTimeMillis();
+		extractUsefulServiceIds(args);
 		super.start(args);
 		System.out.printf("Generating STL bus data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+	}
+
+	private void extractUsefulServiceIds(String[] args) {
+		System.out.printf("Extracting useful service IDs...\n");
+		GSpec gtfs = GReader.readGtfsZipFile(args[0], this);
+		Integer startDate = null;
+		Integer endDate = null;
+		for (GCalendar gCalendar : gtfs.calendars) {
+			if (gCalendar.start_date <= getTodayStringInt() && gCalendar.end_date >= getTodayStringInt()) {
+				if (startDate == null || gCalendar.start_date < startDate) {
+					startDate = gCalendar.start_date;
+				}
+				if (endDate == null || gCalendar.end_date > endDate) {
+					endDate = gCalendar.end_date;
+				}
+			}
+		}
+		System.out.println("Generated on " + getTodayStringInt() + " | Schedules from " + startDate + " to " + endDate);
+		HashSet<String> startWithFilters = new HashSet<String>();
+		for (GCalendar gCalendar : gtfs.calendars) {
+			if ((gCalendar.start_date >= startDate && gCalendar.start_date <= endDate) //
+					|| (gCalendar.end_date >= startDate && gCalendar.end_date <= endDate)) {
+				startWithFilters.add(gCalendar.service_id.substring(0, 6));
+			}
+		}
+		for (GCalendarDate gCalendarDate : gtfs.calendarDates) {
+			if (gCalendarDate.date >= startDate && gCalendarDate.date <= endDate) {
+				startWithFilters.add(gCalendarDate.service_id.substring(0, 6));
+			}
+		}
+		System.out.println("Filters: " + startWithFilters);
+		this.startWithFilters = startWithFilters;
+		gtfs = null;
+		System.out.printf("Extracting useful service IDs... DONE\n");
 	}
 
 	@Override
@@ -48,42 +86,77 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		if (ROUTE_TYPE_FILTER != null && !gRoute.route_type.equals(ROUTE_TYPE_FILTER)) {
 			return true;
 		}
-		if (ROUTE_ID_FILTER != null && !gRoute.route_id.startsWith(ROUTE_ID_FILTER)) {
-			return true;
+		if (this.startWithFilters != null) {
+			for (String startWithFilter : startWithFilters) {
+				if (gRoute.route_id.startsWith(startWithFilter)) {
+					return false; // keep
+				}
+			}
+			return true; // exclude
 		}
 		return super.excludeRoute(gRoute);
 	}
 
 	@Override
 	public boolean excludeTrip(GTrip gTrip) {
-		if (SERVICE_ID_FILTER != null && !gTrip.service_id.contains(SERVICE_ID_FILTER)) {
-			return true;
+		if (this.startWithFilters != null) {
+			for (String startWithFilter : startWithFilters) {
+				if (gTrip.service_id.startsWith(startWithFilter)) {
+					return false; // keep
+				}
+			}
+			return true; // exclude
 		}
-		return false;
+		return super.excludeTrip(gTrip);
 	}
 
 	@Override
 	public boolean excludeStop(GStop gStop) {
-		if (STOP_ID_FILTER != null && !gStop.stop_id.contains(STOP_ID_FILTER)) {
-			return true;
+		if (this.startWithFilters != null) {
+			for (String startWithFilter : startWithFilters) {
+				if (gStop.stop_id.startsWith(startWithFilter)) {
+					return false; // keep
+				}
+			}
+			return true; // exclude
 		}
-		return false;
+		return super.excludeStop(gStop);
 	}
 
 	@Override
 	public boolean excludeCalendarDate(GCalendarDate gCalendarDates) {
-		if (SERVICE_ID_FILTER != null && !gCalendarDates.service_id.contains(SERVICE_ID_FILTER)) {
-			return true;
+		if (this.startWithFilters != null) {
+			for (String startWithFilter : startWithFilters) {
+				if (gCalendarDates.service_id.startsWith(startWithFilter)) {
+					return false; // keep
+				}
+			}
+			return true; // exclude
 		}
-		return false;
+		return super.excludeCalendarDate(gCalendarDates);
 	}
 
+	private static final SimpleDateFormat PARSE_DATE = new SimpleDateFormat("yyyyMMdd");
+
+	private Integer todayStringInt = null;
+
+	private Integer getTodayStringInt() {
+		if (todayStringInt == null) {
+			todayStringInt = Integer.valueOf(PARSE_DATE.format(new Date()));
+		}
+		return todayStringInt;
+	}
 	@Override
 	public boolean excludeCalendar(GCalendar gCalendar) {
-		if (SERVICE_ID_FILTER != null && !gCalendar.service_id.contains(SERVICE_ID_FILTER)) {
-			return true;
+		if (this.startWithFilters != null) {
+			for (String startWithFilter : startWithFilters) {
+				if (gCalendar.service_id.startsWith(startWithFilter)) {
+					return false; // keep
+				}
+			}
+			return true; // exclude
 		}
-		return false;
+		return super.excludeCalendar(gCalendar);
 	}
 
 	@Override
