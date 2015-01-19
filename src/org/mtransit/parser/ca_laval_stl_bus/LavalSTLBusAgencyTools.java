@@ -1,18 +1,14 @@
 package org.mtransit.parser.ca_laval_stl_bus;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.Utils;
-import org.mtransit.parser.gtfs.GReader;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
 import org.mtransit.parser.gtfs.data.GRoute;
-import org.mtransit.parser.gtfs.data.GSpec;
 import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MDirectionType;
@@ -37,59 +33,26 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		new LavalSTLBusAgencyTools().start(args);
 	}
 
-	private HashSet<String> startWithFilters;
+	private HashSet<String> serviceIds;
 
 	@Override
 	public void start(String[] args) {
 		System.out.printf("Generating STL bus data...\n");
 		long start = System.currentTimeMillis();
-		extractUsefulServiceIds(args);
+		this.serviceIds = extractUsefulServiceIds(args, this);
 		super.start(args);
 		System.out.printf("Generating STL bus data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
 	}
 
-	private void extractUsefulServiceIds(String[] args) {
-		System.out.printf("Extracting useful service IDs...\n");
-		GSpec gtfs = GReader.readGtfsZipFile(args[0], this);
-		Integer startDate = null;
-		Integer endDate = null;
-		Integer todayStringInt = Integer.valueOf(new SimpleDateFormat("yyyyMMdd").format(new Date()));
-		for (GCalendar gCalendar : gtfs.calendars) {
-			if (gCalendar.start_date <= todayStringInt && gCalendar.end_date >= todayStringInt) {
-				if (startDate == null || gCalendar.start_date < startDate) {
-					startDate = gCalendar.start_date;
-				}
-				if (endDate == null || gCalendar.end_date > endDate) {
-					endDate = gCalendar.end_date;
-				}
-			}
-		}
-		System.out.println("Generated on " + todayStringInt + " | Schedules from " + startDate + " to " + endDate);
-		this.startWithFilters = new HashSet<String>();
-		for (GCalendar gCalendar : gtfs.calendars) {
-			if ((gCalendar.start_date >= startDate && gCalendar.start_date <= endDate) //
-					|| (gCalendar.end_date >= startDate && gCalendar.end_date <= endDate)) {
-				this.startWithFilters.add(gCalendar.service_id.substring(0, 6));
-			}
-		}
-		for (GCalendarDate gCalendarDate : gtfs.calendarDates) {
-			if (gCalendarDate.date >= startDate && gCalendarDate.date <= endDate) {
-				this.startWithFilters.add(gCalendarDate.service_id.substring(0, 6));
-			}
-		}
-		System.out.println("Filters: " + this.startWithFilters);
-		gtfs = null;
-		System.out.printf("Extracting useful service IDs... DONE\n");
-	}
 
 	@Override
 	public boolean excludeRoute(GRoute gRoute) {
 		if (ROUTE_TYPE_FILTER != null && !gRoute.route_type.equals(ROUTE_TYPE_FILTER)) {
-			return true;
+			return true; // exclude
 		}
-		if (this.startWithFilters != null) {
-			for (String startWithFilter : this.startWithFilters) {
-				if (gRoute.route_id.startsWith(startWithFilter)) {
+		if (this.serviceIds != null) {
+			for (String serviceId : this.serviceIds) {
+				if (gRoute.route_id.startsWith(serviceId.substring(0, 6))) {
 					return false; // keep
 				}
 			}
@@ -100,22 +63,17 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public boolean excludeTrip(GTrip gTrip) {
-		if (this.startWithFilters != null) {
-			for (String startWithFilter : this.startWithFilters) {
-				if (gTrip.service_id.startsWith(startWithFilter)) {
-					return false; // keep
-				}
-			}
-			return true; // exclude
+		if (this.serviceIds != null) {
+			return excludeUselessTrip(gTrip, this.serviceIds);
 		}
 		return super.excludeTrip(gTrip);
 	}
 
 	@Override
 	public boolean excludeStop(GStop gStop) {
-		if (this.startWithFilters != null) {
-			for (String startWithFilter : this.startWithFilters) {
-				if (gStop.stop_id.startsWith(startWithFilter)) {
+		if (this.serviceIds != null) {
+			for (String serviceId : this.serviceIds) {
+				if (gStop.stop_id.startsWith(serviceId.substring(0, 6))) {
 					return false; // keep
 				}
 			}
@@ -126,26 +84,16 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public boolean excludeCalendarDate(GCalendarDate gCalendarDates) {
-		if (this.startWithFilters != null) {
-			for (String startWithFilter : this.startWithFilters) {
-				if (gCalendarDates.service_id.startsWith(startWithFilter)) {
-					return false; // keep
-				}
-			}
-			return true; // exclude
+		if (this.serviceIds != null) {
+			return excludeUselessCalendarDate(gCalendarDates, this.serviceIds);
 		}
 		return super.excludeCalendarDate(gCalendarDates);
 	}
 
 	@Override
 	public boolean excludeCalendar(GCalendar gCalendar) {
-		if (this.startWithFilters != null) {
-			for (String startWithFilter : startWithFilters) {
-				if (gCalendar.service_id.startsWith(startWithFilter)) {
-					return false; // keep
-				}
-			}
-			return true; // exclude
+		if (this.serviceIds != null) {
+			return excludeUselessCalendar(gCalendar, this.serviceIds);
 		}
 		return super.excludeCalendar(gCalendar);
 	}
