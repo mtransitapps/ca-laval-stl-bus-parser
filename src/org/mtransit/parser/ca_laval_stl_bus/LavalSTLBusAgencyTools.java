@@ -26,7 +26,6 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	public static final String ROUTE_TYPE_FILTER = "3"; // bus only
 
-	private HashSet<String> startWithFilters;
 
 	public static void main(String[] args) {
 		if (args == null || args.length == 0) {
@@ -37,6 +36,8 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		}
 		new LavalSTLBusAgencyTools().start(args);
 	}
+
+	private HashSet<String> startWithFilters;
 
 	@Override
 	public void start(String[] args) {
@@ -52,8 +53,9 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		GSpec gtfs = GReader.readGtfsZipFile(args[0], this);
 		Integer startDate = null;
 		Integer endDate = null;
+		Integer todayStringInt = Integer.valueOf(new SimpleDateFormat("yyyyMMdd").format(new Date()));
 		for (GCalendar gCalendar : gtfs.calendars) {
-			if (gCalendar.start_date <= getTodayStringInt() && gCalendar.end_date >= getTodayStringInt()) {
+			if (gCalendar.start_date <= todayStringInt && gCalendar.end_date >= todayStringInt) {
 				if (startDate == null || gCalendar.start_date < startDate) {
 					startDate = gCalendar.start_date;
 				}
@@ -62,21 +64,20 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 				}
 			}
 		}
-		System.out.println("Generated on " + getTodayStringInt() + " | Schedules from " + startDate + " to " + endDate);
-		HashSet<String> startWithFilters = new HashSet<String>();
+		System.out.println("Generated on " + todayStringInt + " | Schedules from " + startDate + " to " + endDate);
+		this.startWithFilters = new HashSet<String>();
 		for (GCalendar gCalendar : gtfs.calendars) {
 			if ((gCalendar.start_date >= startDate && gCalendar.start_date <= endDate) //
 					|| (gCalendar.end_date >= startDate && gCalendar.end_date <= endDate)) {
-				startWithFilters.add(gCalendar.service_id.substring(0, 6));
+				this.startWithFilters.add(gCalendar.service_id.substring(0, 6));
 			}
 		}
 		for (GCalendarDate gCalendarDate : gtfs.calendarDates) {
 			if (gCalendarDate.date >= startDate && gCalendarDate.date <= endDate) {
-				startWithFilters.add(gCalendarDate.service_id.substring(0, 6));
+				this.startWithFilters.add(gCalendarDate.service_id.substring(0, 6));
 			}
 		}
-		System.out.println("Filters: " + startWithFilters);
-		this.startWithFilters = startWithFilters;
+		System.out.println("Filters: " + this.startWithFilters);
 		gtfs = null;
 		System.out.printf("Extracting useful service IDs... DONE\n");
 	}
@@ -87,7 +88,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 			return true;
 		}
 		if (this.startWithFilters != null) {
-			for (String startWithFilter : startWithFilters) {
+			for (String startWithFilter : this.startWithFilters) {
 				if (gRoute.route_id.startsWith(startWithFilter)) {
 					return false; // keep
 				}
@@ -100,7 +101,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	@Override
 	public boolean excludeTrip(GTrip gTrip) {
 		if (this.startWithFilters != null) {
-			for (String startWithFilter : startWithFilters) {
+			for (String startWithFilter : this.startWithFilters) {
 				if (gTrip.service_id.startsWith(startWithFilter)) {
 					return false; // keep
 				}
@@ -113,7 +114,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	@Override
 	public boolean excludeStop(GStop gStop) {
 		if (this.startWithFilters != null) {
-			for (String startWithFilter : startWithFilters) {
+			for (String startWithFilter : this.startWithFilters) {
 				if (gStop.stop_id.startsWith(startWithFilter)) {
 					return false; // keep
 				}
@@ -126,7 +127,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	@Override
 	public boolean excludeCalendarDate(GCalendarDate gCalendarDates) {
 		if (this.startWithFilters != null) {
-			for (String startWithFilter : startWithFilters) {
+			for (String startWithFilter : this.startWithFilters) {
 				if (gCalendarDates.service_id.startsWith(startWithFilter)) {
 					return false; // keep
 				}
@@ -136,16 +137,6 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return super.excludeCalendarDate(gCalendarDates);
 	}
 
-	private static final SimpleDateFormat PARSE_DATE = new SimpleDateFormat("yyyyMMdd");
-
-	private Integer todayStringInt = null;
-
-	private Integer getTodayStringInt() {
-		if (todayStringInt == null) {
-			todayStringInt = Integer.valueOf(PARSE_DATE.format(new Date()));
-		}
-		return todayStringInt;
-	}
 	@Override
 	public boolean excludeCalendar(GCalendar gCalendar) {
 		if (this.startWithFilters != null) {
