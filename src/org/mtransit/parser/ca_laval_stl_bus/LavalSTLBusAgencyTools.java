@@ -129,17 +129,11 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return MSpec.cleanLabel(result);
 	}
 
-	public static final String COLOR_BLUE = "0053A6";
-	public static final String COLOR_WHITE = "FFFFFF";
+	private static final String COLOR_BLUE = "0053A6";
 
 	@Override
 	public String getRouteColor(GRoute gRoute) {
 		return COLOR_BLUE; // source file colors are nuts!
-	}
-
-	@Override
-	public String getRouteTextColor(GRoute gRoute) {
-		return COLOR_WHITE; // source file colors are nuts!
 	}
 
 	@Override
