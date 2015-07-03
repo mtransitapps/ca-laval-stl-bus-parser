@@ -149,7 +149,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void setTripHeadsign(MRoute mRoute, MTrip mTrip, GTrip gTrip, GSpec gtfs) {
-		final String directionIdString = gTrip.getRouteId().substring(gTrip.getRouteId().length() - 1);
+		String directionIdString = gTrip.getRouteId().substring(gTrip.getRouteId().length() - 1);
 		mTrip.setHeadsignDirection(MDirectionType.parse(directionIdString));
 	}
 
