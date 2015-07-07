@@ -15,7 +15,7 @@ import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MDirectionType;
 import org.mtransit.parser.mt.data.MRoute;
-import org.mtransit.parser.mt.data.MSpec;
+import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.mt.data.MTrip;
 
 // http://www.stl.laval.qc.ca/en/stl-synchro/developers/
@@ -36,11 +36,11 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void start(String[] args) {
-		System.out.printf("Generating STL bus data...\n");
+		System.out.printf("\nGenerating STL bus data...\n");
 		long start = System.currentTimeMillis();
 		this.serviceIds = extractUsefulServiceIds(args, this);
 		super.start(args);
-		System.out.printf("Generating STL bus data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+		System.out.printf("\nGenerating STL bus data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
 	}
 
 
@@ -126,8 +126,8 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		result = METRO.matcher(result).replaceAll(METRO_REPLACEMENT);
 		result = GARE.matcher(result).replaceAll(GARE_REPLACEMENT);
 		result = TERMINUS.matcher(result).replaceAll(TERMINUS_REPLACEMENT);
-		result = MSpec.SAINT.matcher(result).replaceAll(MSpec.SAINT_REPLACEMENT);
-		return MSpec.cleanLabel(result);
+		result = CleanUtils.SAINT.matcher(result).replaceAll(CleanUtils.SAINT_REPLACEMENT);
+		return CleanUtils.cleanLabel(result);
 	}
 
 	private static final String AGENCY_COLOR = "0053A6";
@@ -171,10 +171,9 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	public String cleanStopName(String gStopName) {
 		String result = gStopName;
 		result = REMOVE_STOP_CODE_STOP_NAME.matcher(result).replaceAll(StringUtils.EMPTY);
-		result = MSpec.CLEAN_SLASHES.matcher(result).replaceAll(MSpec.CLEAN_SLASHES_REPLACEMENT);
-		result = Utils.replaceAll(result, START_WITH_FACES, MSpec.SPACE);
-		result = Utils.replaceAll(result, SPACE_FACES, MSpec.SPACE);
+		result = CleanUtils.CLEAN_SLASHES.matcher(result).replaceAll(CleanUtils.CLEAN_SLASHES_REPLACEMENT);
+		result = Utils.replaceAll(result, START_WITH_FACES, CleanUtils.SPACE);
+		result = Utils.replaceAll(result, SPACE_FACES, CleanUtils.SPACE);
 		return super.cleanStopNameFR(result);
 	}
-
 }
