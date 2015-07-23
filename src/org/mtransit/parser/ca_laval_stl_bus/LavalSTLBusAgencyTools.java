@@ -48,7 +48,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	public boolean excludeRoute(GRoute gRoute) {
 		if (this.serviceIds != null) {
 			for (String serviceId : this.serviceIds) {
-				if (gRoute.route_id.startsWith(serviceId.substring(0, 6))) {
+				if (gRoute.getRouteId().startsWith(serviceId.substring(0, 6))) {
 					return false; // keep
 				}
 			}
@@ -74,7 +74,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	public boolean excludeStop(GStop gStop) {
 		if (this.serviceIds != null) {
 			for (String serviceId : this.serviceIds) {
-				if (gStop.stop_id.startsWith(serviceId.substring(0, 6))) {
+				if (gStop.getStopId().startsWith(serviceId.substring(0, 6))) {
 					return false; // keep
 				}
 			}
@@ -101,7 +101,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public long getRouteId(GRoute gRoute) {
-		return Integer.valueOf(gRoute.route_short_name); // using route short name instead of route ID
+		return Integer.valueOf(gRoute.getRouteShortName()); // using route short name instead of route ID
 	}
 
 	private static final Pattern DIRECTION = Pattern.compile("(direction)", Pattern.CASE_INSENSITIVE);
@@ -118,7 +118,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String getRouteLongName(GRoute gRoute) {
-		return cleanRouteLongName(gRoute.route_long_name);
+		return cleanRouteLongName(gRoute.getRouteLongName());
 	}
 
 	private String cleanRouteLongName(String result) {
@@ -144,7 +144,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public int getStopId(GStop gStop) {
-		return Integer.valueOf(gStop.stop_code); // use stop code instead of stop ID
+		return Integer.valueOf(gStop.getStopCode()); // use stop code instead of stop ID
 	}
 
 	@Override
@@ -169,11 +169,10 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String cleanStopName(String gStopName) {
-		String result = gStopName;
-		result = REMOVE_STOP_CODE_STOP_NAME.matcher(result).replaceAll(StringUtils.EMPTY);
-		result = CleanUtils.CLEAN_SLASHES.matcher(result).replaceAll(CleanUtils.CLEAN_SLASHES_REPLACEMENT);
-		result = Utils.replaceAll(result, START_WITH_FACES, CleanUtils.SPACE);
-		result = Utils.replaceAll(result, SPACE_FACES, CleanUtils.SPACE);
-		return super.cleanStopNameFR(result);
+		gStopName = REMOVE_STOP_CODE_STOP_NAME.matcher(gStopName).replaceAll(StringUtils.EMPTY);
+		gStopName = CleanUtils.cleanSlashes(gStopName);
+		gStopName = Utils.replaceAll(gStopName, START_WITH_FACES, CleanUtils.SPACE);
+		gStopName = Utils.replaceAll(gStopName, SPACE_FACES, CleanUtils.SPACE);
+		return super.cleanStopNameFR(gStopName);
 	}
 }
