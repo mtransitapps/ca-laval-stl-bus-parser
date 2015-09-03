@@ -173,6 +173,6 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		gStopName = CleanUtils.cleanSlashes(gStopName);
 		gStopName = Utils.replaceAll(gStopName, START_WITH_FACES, CleanUtils.SPACE);
 		gStopName = Utils.replaceAll(gStopName, SPACE_FACES, CleanUtils.SPACE);
-		return super.cleanStopNameFR(gStopName);
+		return CleanUtils.cleanLabelFR(gStopName);
 	}
 }
