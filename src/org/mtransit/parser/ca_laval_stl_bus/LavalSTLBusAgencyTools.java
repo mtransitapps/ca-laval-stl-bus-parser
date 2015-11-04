@@ -153,6 +153,13 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		mTrip.setHeadsignDirection(MDirectionType.parse(directionIdString));
 	}
 
+	@Override
+	public String cleanTripHeadsign(String tripHeadsign) {
+		tripHeadsign = CleanUtils.cleanStreetTypesFRCA(tripHeadsign);
+		tripHeadsign = CleanUtils.CLEAN_ET.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_ET_REPLACEMENT);
+		return CleanUtils.cleanLabel(tripHeadsign);
+	}
+
 	private static final Pattern REMOVE_STOP_CODE_STOP_NAME = Pattern.compile("\\[[0-9]{5}\\]");
 
 	private static final Pattern START_WITH_FACE_A = Pattern.compile("^(face à )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
