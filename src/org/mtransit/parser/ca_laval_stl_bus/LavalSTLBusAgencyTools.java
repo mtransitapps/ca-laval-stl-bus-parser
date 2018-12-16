@@ -111,8 +111,8 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	private static final Pattern DIRECTION = Pattern.compile("(direction)", Pattern.CASE_INSENSITIVE);
 	private static final String DIRECTION_REPLACEMENT = " ";
 
-	private static final Pattern TERMINUS = Pattern.compile("(terminus)", Pattern.CASE_INSENSITIVE);
-	private static final String TERMINUS_REPLACEMENT = " ";
+	private static final Pattern TERMINUS = Pattern.compile("(terminus )", Pattern.CASE_INSENSITIVE);
+	private static final String TERMINUS_REPLACEMENT = "";
 
 	private static final Pattern METRO = Pattern.compile("(m[e|é]tro)", Pattern.CASE_INSENSITIVE);
 	private static final String METRO_REPLACEMENT = " ";
