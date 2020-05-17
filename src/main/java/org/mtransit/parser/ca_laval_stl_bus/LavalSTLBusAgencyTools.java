@@ -50,14 +50,6 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public boolean excludeRoute(GRoute gRoute) {
-		if (this.serviceIds != null) {
-			for (String serviceId : this.serviceIds) {
-				if (gRoute.getRouteId().startsWith(serviceId.substring(0, 6))) {
-					return false; // keep
-				}
-			}
-			return true; // exclude
-		}
 		return super.excludeRoute(gRoute);
 	}
 
@@ -76,14 +68,6 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public boolean excludeStop(GStop gStop) {
-		if (this.serviceIds != null) {
-			for (String serviceId : this.serviceIds) {
-				if (gStop.getStopId().startsWith(serviceId.substring(0, 6))) {
-					return false; // keep
-				}
-			}
-			return true; // exclude
-		}
 		return super.excludeStop(gStop);
 	}
 
@@ -105,7 +89,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public long getRouteId(GRoute gRoute) {
-		return Integer.valueOf(gRoute.getRouteShortName()); // using route short name instead of route ID
+		return Long.parseLong(gRoute.getRouteShortName()); // using route short name instead of route ID
 	}
 
 	private static final Pattern DIRECTION = Pattern.compile("(direction)", Pattern.CASE_INSENSITIVE);
@@ -148,7 +132,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public int getStopId(GStop gStop) {
-		return Integer.valueOf(gStop.getStopCode()); // use stop code instead of stop ID
+		return Integer.parseInt(gStop.getStopCode()); // use stop code instead of stop ID
 	}
 
 	@Override
@@ -174,9 +158,9 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	private static final Pattern SPACE_WITH_FACE_AU = Pattern.compile("( face au )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 	private static final Pattern SPACE_WITH_FACE = Pattern.compile("( face )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
-	private static final Pattern[] START_WITH_FACES = new Pattern[] { START_WITH_FACE_A, START_WITH_FACE_AU, START_WITH_FACE };
+	private static final Pattern[] START_WITH_FACES = new Pattern[]{START_WITH_FACE_A, START_WITH_FACE_AU, START_WITH_FACE};
 
-	private static final Pattern[] SPACE_FACES = new Pattern[] { SPACE_FACE_A, SPACE_WITH_FACE_AU, SPACE_WITH_FACE };
+	private static final Pattern[] SPACE_FACES = new Pattern[]{SPACE_FACE_A, SPACE_WITH_FACE_AU, SPACE_WITH_FACE};
 
 	@Override
 	public String cleanStopName(String gStopName) {
