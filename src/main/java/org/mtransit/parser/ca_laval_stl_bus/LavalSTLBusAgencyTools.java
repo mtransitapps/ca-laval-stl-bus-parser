@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
+import org.mtransit.parser.MTLog;
 import org.mtransit.parser.Utils;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
@@ -18,7 +19,8 @@ import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.mt.data.MTrip;
 
-// http://www.stl.laval.qc.ca/en/stl-synchro/developers/
+// https://stlaval.ca/about-us/public-information/open-data
+// https://stlaval.ca/a-propos/diffusion/donnees-ouvertes
 // http://www.stl.laval.qc.ca/opendata/GTF_STL.zip
 public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
@@ -36,21 +38,16 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void start(String[] args) {
-		System.out.printf("\nGenerating STL bus data...");
+		MTLog.log("Generating STL bus data...");
 		long start = System.currentTimeMillis();
 		this.serviceIds = extractUsefulServiceIds(args, this);
 		super.start(args);
-		System.out.printf("\nGenerating STL bus data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+		MTLog.log("Generating STL bus data... DONE in %s.", Utils.getPrettyDuration(System.currentTimeMillis() - start));
 	}
 
 	@Override
 	public boolean excludingAll() {
 		return this.serviceIds != null && this.serviceIds.isEmpty();
-	}
-
-	@Override
-	public boolean excludeRoute(GRoute gRoute) {
-		return super.excludeRoute(gRoute);
 	}
 
 	@Override
@@ -64,11 +61,6 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 			return excludeUselessTrip(gTrip, this.serviceIds);
 		}
 		return super.excludeTrip(gTrip);
-	}
-
-	@Override
-	public boolean excludeStop(GStop gStop) {
-		return super.excludeStop(gStop);
 	}
 
 	@Override
@@ -98,7 +90,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	private static final Pattern TERMINUS = Pattern.compile("(terminus )", Pattern.CASE_INSENSITIVE);
 	private static final String TERMINUS_REPLACEMENT = "";
 
-	private static final Pattern METRO = Pattern.compile("(m[e|é]tro)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern METRO = Pattern.compile("(m[e|é]tro)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ);
 	private static final String METRO_REPLACEMENT = " ";
 
 	private static final Pattern GARE = Pattern.compile("(gare)", Pattern.CASE_INSENSITIVE);
@@ -150,11 +142,11 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	private static final Pattern REMOVE_STOP_CODE_STOP_NAME = Pattern.compile("\\[[0-9]{5}\\]");
 
-	private static final Pattern START_WITH_FACE_A = Pattern.compile("^(face à )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+	private static final Pattern START_WITH_FACE_A = Pattern.compile("^(face à )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ);
 	private static final Pattern START_WITH_FACE_AU = Pattern.compile("^(face au )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 	private static final Pattern START_WITH_FACE = Pattern.compile("^(face )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
-	private static final Pattern SPACE_FACE_A = Pattern.compile("( face à )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+	private static final Pattern SPACE_FACE_A = Pattern.compile("( face à )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ);
 	private static final Pattern SPACE_WITH_FACE_AU = Pattern.compile("( face au )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 	private static final Pattern SPACE_WITH_FACE = Pattern.compile("( face )", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
