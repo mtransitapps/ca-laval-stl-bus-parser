@@ -142,6 +142,22 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		mTrip.setHeadsignDirection(MDirectionType.parse(directionIdString));
 	}
 
+	@Override
+	public boolean directionFinderEnabled() {
+		return true; // actually not working BECAUSE direction_id NOT provided & 2 routes for 1 route w/ 2 directions
+	}
+
+	@Override
+	public int getDirectionType() {
+		return MTrip.HEADSIGN_TYPE_DIRECTION;
+	}
+
+	@Nullable
+	@Override
+	public MDirectionType convertDirection(@Nullable String headSign) {
+		return null; // no direction conversion
+	}
+
 	@NotNull
 	@Override
 	public String cleanTripHeadsign(@NotNull String tripHeadsign) {
