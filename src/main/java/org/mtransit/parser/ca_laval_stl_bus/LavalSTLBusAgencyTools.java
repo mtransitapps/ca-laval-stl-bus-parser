@@ -102,11 +102,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@NotNull
 	@Override
-	public String getRouteLongName(@NotNull GRoute gRoute) {
-		return cleanRouteLongName(gRoute.getRouteLongName());
-	}
-
-	private String cleanRouteLongName(String result) {
+	public String cleanRouteLongName(@NotNull String result) {
 		result = DIRECTION.matcher(result).replaceAll(DIRECTION_REPLACEMENT);
 		result = METRO.matcher(result).replaceAll(METRO_REPLACEMENT);
 		result = GARE.matcher(result).replaceAll(GARE_REPLACEMENT);
