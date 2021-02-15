@@ -1,14 +1,11 @@
 package org.mtransit.parser.ca_laval_stl_bus;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.mtransit.parser.CleanUtils;
+import org.mtransit.commons.CleanUtils;
+import org.mtransit.commons.RegexUtils;
+import org.mtransit.commons.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
-import org.mtransit.parser.MTLog;
-import org.mtransit.parser.Utils;
-import org.mtransit.parser.gtfs.data.GCalendar;
-import org.mtransit.parser.gtfs.data.GCalendarDate;
 import org.mtransit.parser.gtfs.data.GRoute;
 import org.mtransit.parser.gtfs.data.GSpec;
 import org.mtransit.parser.gtfs.data.GStop;
@@ -18,7 +15,8 @@ import org.mtransit.parser.mt.data.MDirectionType;
 import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MTrip;
 
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 // https://stlaval.ca/about-us/public-information/open-data
@@ -26,61 +24,25 @@ import java.util.regex.Pattern;
 // http://www.stl.laval.qc.ca/opendata/GTF_STL.zip
 public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
-	public static void main(@Nullable String[] args) {
-		if (args == null || args.length == 0) {
-			args = new String[3];
-			args[0] = "input/gtfs.zip";
-			args[1] = "../../mtransitapps/ca-laval-stl-bus-android/res/raw/";
-			args[2] = ""; // files-prefix
-		}
+	public static void main(@NotNull String[] args) {
 		new LavalSTLBusAgencyTools().start(args);
 	}
 
-	@Nullable
-	private HashSet<Integer> serviceIdInts;
-
 	@Override
-	public void start(@NotNull String[] args) {
-		MTLog.log("Generating STL bus data...");
-		long start = System.currentTimeMillis();
-		this.serviceIdInts = extractUsefulServiceIdInts(args, this, true);
-		super.start(args);
-		MTLog.log("Generating STL bus data... DONE in %s.", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+	public boolean defaultExcludeEnabled() {
+		return true;
 	}
 
+	@NotNull
 	@Override
-	public boolean excludingAll() {
-		return this.serviceIdInts != null && this.serviceIdInts.isEmpty();
+	public String getAgencyName() {
+		return "STL";
 	}
 
 	@NotNull
 	@Override
 	public Integer getAgencyRouteType() {
 		return MAgency.ROUTE_TYPE_BUS;
-	}
-
-	@Override
-	public boolean excludeTrip(@NotNull GTrip gTrip) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessTripInt(gTrip, this.serviceIdInts);
-		}
-		return super.excludeTrip(gTrip);
-	}
-
-	@Override
-	public boolean excludeCalendarDate(@NotNull GCalendarDate gCalendarDates) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessCalendarDateInt(gCalendarDates, this.serviceIdInts);
-		}
-		return super.excludeCalendarDate(gCalendarDates);
-	}
-
-	@Override
-	public boolean excludeCalendar(@NotNull GCalendar gCalendar) {
-		if (this.serviceIdInts != null) {
-			return excludeUselessCalendarInt(gCalendar, this.serviceIdInts);
-		}
-		return super.excludeCalendar(gCalendar);
 	}
 
 	@Override
@@ -102,13 +64,13 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@NotNull
 	@Override
-	public String cleanRouteLongName(@NotNull String result) {
-		result = DIRECTION.matcher(result).replaceAll(DIRECTION_REPLACEMENT);
-		result = METRO.matcher(result).replaceAll(METRO_REPLACEMENT);
-		result = GARE.matcher(result).replaceAll(GARE_REPLACEMENT);
-		result = TERMINUS.matcher(result).replaceAll(TERMINUS_REPLACEMENT);
-		result = CleanUtils.SAINT.matcher(result).replaceAll(CleanUtils.SAINT_REPLACEMENT);
-		return CleanUtils.cleanLabel(result);
+	public String cleanRouteLongName(@NotNull String routeLongName) {
+		routeLongName = DIRECTION.matcher(routeLongName).replaceAll(DIRECTION_REPLACEMENT);
+		routeLongName = METRO.matcher(routeLongName).replaceAll(METRO_REPLACEMENT);
+		routeLongName = GARE.matcher(routeLongName).replaceAll(GARE_REPLACEMENT);
+		routeLongName = TERMINUS.matcher(routeLongName).replaceAll(TERMINUS_REPLACEMENT);
+		routeLongName = CleanUtils.SAINT.matcher(routeLongName).replaceAll(CleanUtils.SAINT_REPLACEMENT);
+		return CleanUtils.cleanLabel(routeLongName);
 	}
 
 	private static final String AGENCY_COLOR = "0053A6";
@@ -143,9 +105,13 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return true; // actually not working BECAUSE direction_id NOT provided & 2 routes for 1 route w/ 2 directions
 	}
 
+	@NotNull
 	@Override
-	public int getDirectionType() {
-		return MTrip.HEADSIGN_TYPE_DIRECTION;
+	public List<Integer> getDirectionTypes() {
+		return Arrays.asList(
+				MTrip.HEADSIGN_TYPE_DIRECTION,
+				MTrip.HEADSIGN_TYPE_STRING
+		);
 	}
 
 	@Nullable
@@ -181,8 +147,8 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	public String cleanStopName(@NotNull String gStopName) {
 		gStopName = REMOVE_STOP_CODE_STOP_NAME.matcher(gStopName).replaceAll(StringUtils.EMPTY);
 		gStopName = CleanUtils.cleanSlashes(gStopName);
-		gStopName = Utils.replaceAll(gStopName, START_WITH_FACES, CleanUtils.SPACE);
-		gStopName = Utils.replaceAll(gStopName, SPACE_FACES, CleanUtils.SPACE);
+		gStopName = RegexUtils.replaceAllNN(gStopName, START_WITH_FACES, CleanUtils.SPACE);
+		gStopName = RegexUtils.replaceAllNN(gStopName, SPACE_FACES, CleanUtils.SPACE);
 		return CleanUtils.cleanLabelFR(gStopName);
 	}
 }
