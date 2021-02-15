@@ -1,22 +1,19 @@
 package org.mtransit.parser.ca_laval_stl_bus;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CleanUtils;
 import org.mtransit.commons.RegexUtils;
 import org.mtransit.commons.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.gtfs.data.GRoute;
-import org.mtransit.parser.gtfs.data.GSpec;
 import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MAgency;
-import org.mtransit.parser.mt.data.MDirectionType;
-import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MTrip;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 // https://stlaval.ca/about-us/public-information/open-data
@@ -50,41 +47,24 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return Long.parseLong(gRoute.getRouteShortName()); // using route short name instead of route ID
 	}
 
-	private static final Pattern DIRECTION = Pattern.compile("(direction )", Pattern.CASE_INSENSITIVE);
-	private static final String DIRECTION_REPLACEMENT = " ";
-
-	private static final Pattern TERMINUS = Pattern.compile("(terminus )", Pattern.CASE_INSENSITIVE);
-	private static final String TERMINUS_REPLACEMENT = "";
-
-	private static final Pattern METRO = Pattern.compile("(m[e|é]tro)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ);
-	private static final String METRO_REPLACEMENT = " ";
-
-	private static final Pattern GARE = Pattern.compile("(gare )", Pattern.CASE_INSENSITIVE);
-	private static final String GARE_REPLACEMENT = " ";
-
 	@NotNull
 	@Override
 	public String cleanRouteLongName(@NotNull String routeLongName) {
-		routeLongName = DIRECTION.matcher(routeLongName).replaceAll(DIRECTION_REPLACEMENT);
-		routeLongName = METRO.matcher(routeLongName).replaceAll(METRO_REPLACEMENT);
-		routeLongName = GARE.matcher(routeLongName).replaceAll(GARE_REPLACEMENT);
-		routeLongName = TERMINUS.matcher(routeLongName).replaceAll(TERMINUS_REPLACEMENT);
+		routeLongName = CleanUtils.keepToFR(routeLongName);
 		routeLongName = CleanUtils.SAINT.matcher(routeLongName).replaceAll(CleanUtils.SAINT_REPLACEMENT);
+		routeLongName = CleanUtils.cleanBounds(Locale.FRENCH, routeLongName);
+		routeLongName = CleanUtils.cleanStreetTypesFRCA(routeLongName);
 		return CleanUtils.cleanLabel(routeLongName);
 	}
 
-	private static final String AGENCY_COLOR = "0053A6";
+	private static final String AGENCY_COLOR = "0053A6"; // (???, 2015?)
+	// TODO private static final String AGENCY_COLOR = "151D6D"; (web site CSS, Jan-2021)
 
 	@NotNull
 	@Override
 	public String getAgencyColor() {
+		// TODO later? extract from routes (all route = same color ? most popular color?)
 		return AGENCY_COLOR;
-	}
-
-	@Nullable
-	@Override
-	public String getRouteColor(@NotNull GRoute gRoute) {
-		return null; // source file colors are nuts!
 	}
 
 	@Override
@@ -92,12 +72,17 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return Integer.parseInt(gStop.getStopCode()); // use stop code instead of stop ID
 	}
 
+	@NotNull
 	@Override
-	public void setTripHeadsign(@NotNull MRoute mRoute, @NotNull MTrip mTrip, @NotNull GTrip gTrip, @NotNull GSpec gtfs) {
+	public String provideMissingTripHeadSign(@NotNull GTrip gTrip) {
 		//noinspection deprecation
 		final String routeId = gTrip.getRouteId();
-		String directionIdString = routeId.substring(routeId.length() - 1);
-		mTrip.setHeadsignDirection(MDirectionType.parse(directionIdString));
+		return routeId.substring(routeId.length() - 1); // last character = E/O/N/S (not W)
+	}
+
+	@Override
+	public boolean directionSplitterEnabled() {
+		return true; // BECAUSE direction_id NOT provided
 	}
 
 	@Override
@@ -108,21 +93,15 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	@NotNull
 	@Override
 	public List<Integer> getDirectionTypes() {
-		return Arrays.asList(
-				MTrip.HEADSIGN_TYPE_DIRECTION,
-				MTrip.HEADSIGN_TYPE_STRING
+		return Collections.singletonList(
+				MTrip.HEADSIGN_TYPE_DIRECTION // used by real-time API
 		);
-	}
-
-	@Nullable
-	@Override
-	public MDirectionType convertDirection(@Nullable String headSign) {
-		return null; // no direction conversion
 	}
 
 	@NotNull
 	@Override
 	public String cleanTripHeadsign(@NotNull String tripHeadsign) {
+		tripHeadsign = CleanUtils.keepToFR(tripHeadsign);
 		tripHeadsign = CleanUtils.cleanStreetTypesFRCA(tripHeadsign);
 		tripHeadsign = CleanUtils.CLEAN_ET.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_ET_REPLACEMENT);
 		return CleanUtils.cleanLabel(tripHeadsign);
