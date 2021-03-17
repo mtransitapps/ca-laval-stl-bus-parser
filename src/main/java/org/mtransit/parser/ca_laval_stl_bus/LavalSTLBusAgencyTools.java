@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 // https://stlaval.ca/about-us/public-information/open-data
 // https://stlaval.ca/a-propos/diffusion/donnees-ouvertes
-// http://www.stl.laval.qc.ca/opendata/GTF_STL.zip
+// https://www.stlaval.ca/datas/opendata/GTF_STL.zip
 public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
