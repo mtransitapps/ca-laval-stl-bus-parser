@@ -57,8 +57,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return CleanUtils.cleanLabel(routeLongName);
 	}
 
-	private static final String AGENCY_COLOR = "0053A6"; // (???, 2015?)
-	// TODO private static final String AGENCY_COLOR = "151D6D"; (web site CSS, Jan-2021)
+	private static final String AGENCY_COLOR = "151F6D";
 
 	@NotNull
 	@Override
