@@ -1,6 +1,7 @@
 package org.mtransit.parser.ca_laval_stl_bus;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CleanUtils;
 import org.mtransit.commons.RegexUtils;
 import org.mtransit.commons.StringUtils;
@@ -25,6 +26,12 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		new LavalSTLBusAgencyTools().start(args);
 	}
 
+	@Nullable
+	@Override
+	public List<Locale> getSupportedLanguages() {
+		return LANG_FR;
+	}
+
 	@Override
 	public boolean defaultExcludeEnabled() {
 		return true;
@@ -43,8 +50,18 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
-	public long getRouteId(@NotNull GRoute gRoute) {
-		return Long.parseLong(gRoute.getRouteShortName()); // using route short name instead of route ID
+	public boolean defaultRouteIdEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean useRouteShortNameForRouteId() {
+		return true;
+	}
+
+	@Override
+	public boolean defaultRouteLongNameEnabled() {
+		return true;
 	}
 
 	@NotNull
@@ -57,13 +74,9 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 		return CleanUtils.cleanLabel(routeLongName);
 	}
 
-	private static final String AGENCY_COLOR = "151F6D";
-
-	@NotNull
 	@Override
-	public String getAgencyColor() {
-		// TODO later? extract from routes (all route = same color ? most popular color?)
-		return AGENCY_COLOR;
+	public boolean defaultAgencyColorEnabled() {
+		return true;
 	}
 
 	@Override
