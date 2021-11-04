@@ -6,6 +6,7 @@ import org.mtransit.commons.CleanUtils;
 import org.mtransit.commons.RegexUtils;
 import org.mtransit.commons.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
+import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GRoute;
 import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
@@ -30,6 +31,22 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	@Override
 	public List<Locale> getSupportedLanguages() {
 		return LANG_FR;
+	}
+
+	@Override
+	public boolean excludeCalendar(@NotNull GCalendar gCalendar) {
+		if (gCalendar.getServiceId().startsWith("GREV21")) {
+			return EXCLUDE;
+		}
+		return super.excludeCalendar(gCalendar);
+	}
+
+	@Override
+	public boolean excludeRoute(@NotNull GRoute gRoute) {
+		if (gRoute.getRouteId().startsWith("GREV21")) {
+			return EXCLUDE;
+		}
+		return super.excludeRoute(gRoute);
 	}
 
 	@Override
