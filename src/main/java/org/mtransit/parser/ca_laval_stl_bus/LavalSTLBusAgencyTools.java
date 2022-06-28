@@ -110,7 +110,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
-	public boolean directionSplitterEnabled() {
+	public boolean directionSplitterEnabled(long routeId) {
 		return true; // BECAUSE direction_id NOT provided
 	}
 
