@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 
 // https://stlaval.ca/about-us/public-information/open-data
 // https://stlaval.ca/a-propos/diffusion/donnees-ouvertes
-// https://www.stlaval.ca/datas/opendata/GTF_STL.zip
 public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
@@ -61,6 +60,11 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	@Override
 	public boolean defaultRouteLongNameEnabled() {
 		return true;
+	}
+
+	@Override
+	public boolean allowGTFSIdOverride() {
+		return true; // BREAKS GTFS-RT compatibility
 	}
 
 	@NotNull
