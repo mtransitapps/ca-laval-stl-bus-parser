@@ -63,8 +63,8 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
-	public boolean allowGTFSIdOverride() {
-		return true; // BREAKS GTFS-RT compatibility
+	public @Nullable String getRouteIdCleanupRegex() {
+		return "[A-Z]+$"; // route ID is like MMMMyyRSNd (ex: "JANV2412E") for 12 east
 	}
 
 	@NotNull
