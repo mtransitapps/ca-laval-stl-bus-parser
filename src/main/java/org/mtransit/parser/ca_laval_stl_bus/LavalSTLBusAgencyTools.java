@@ -64,7 +64,7 @@ public class LavalSTLBusAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public @Nullable String getRouteIdCleanupRegex() {
-		return "[A-Z]+$"; // route ID is like MMMMyyRSNd (ex: "JANV2412E") for 12 east
+		return "[NSEO]$"; // route ID is like MMMMyyRSNd (ex: "JANV2412E") for 12 east
 	}
 
 	@NotNull
